@@ -1,0 +1,32 @@
+@startuml database
+
+entity users {
+    id
+    --
+    email
+    --
+    password
+}
+
+entity user_housing_areas {
+    id
+    --
+    user_id
+    --
+    housing_area_id
+}
+
+entity housing_areas {
+    id
+    --
+    name
+    --
+    code
+    --
+    address
+}
+
+housing_areas ||--o{ user_housing_areas
+users ||--o{ user_housing_areas
+
+@enduml

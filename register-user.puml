@@ -1,0 +1,32 @@
+@startuml register
+actor User
+participant "Register Page" as RegisterPage
+participant "API" as API
+participant "Database" as DB
+
+User -> RegisterPage: Open register page
+activate RegisterPage
+
+User -> RegisterPage: Input name, perumahan, password, email
+RegisterPage -> API: Hit API register
+activate API
+
+alt Password validation
+  RegisterPage -> RegisterPage: Validate password (min. 6 digits)
+  alt Password valid
+    API -> DB: Save user data to the database
+    activate DB
+    DB --> API: Confirmation
+    API --> RegisterPage: Registration successful and direct to login page
+    RegisterPage --> User: Display success message and direct to login page
+  else Password invalid
+    RegisterPage --> User: Display error message
+  end
+else Validation failed
+  RegisterPage --> User: Display error message
+end
+
+deactivate API
+deactivate DB
+
+@enduml

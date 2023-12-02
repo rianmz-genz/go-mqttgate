@@ -1,0 +1,35 @@
+@startuml login
+actor User
+participant "Login Page" as LoginPage
+participant "API" as API
+participant "Database" as DB
+
+User -> LoginPage: Open login page
+activate LoginPage
+
+User -> LoginPage: Input email, password
+LoginPage -> API: Hit API login
+activate API
+
+API -> DB: Query user data
+activate DB
+
+alt User found
+  DB --> API: User data
+  API --> LoginPage: User found
+  LoginPage -> LoginPage: validation
+  alt Password correct
+    LoginPage --> User: Login successful and display dashboard page
+  else Password incorrect
+    LoginPage --> User: Display error message
+  end
+else User not found
+  DB --> API: User not found
+  API --> LoginPage: User not found
+  LoginPage --> User: Display error message
+end
+
+deactivate API
+deactivate DB
+
+@enduml

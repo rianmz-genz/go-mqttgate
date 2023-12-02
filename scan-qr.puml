@@ -1,0 +1,31 @@
+@startuml scanQr
+actor User
+participant "QR Scanner" as QRScanner
+participant "API" as API
+participant "MQTT Broker" as MQTTBroker
+participant "Wemos D1 Mini" as WemosD1Mini
+
+User -> QRScanner: Scan QR Code
+activate QRScanner
+
+QRScanner -> API: Hit API and Trigger MQTT
+activate API
+activate MQTTBroker
+
+API -> API: Check user-perumahan association
+alt User in the perumahan
+  API --> MQTTBroker: Send MQTT message with spesific perumahan_id (status=true, perumahan_id)
+else User not in the perumahan
+  API --> QRScanner: User is not in perumahan
+end
+
+deactivate API
+
+MQTTBroker -> WemosD1Mini: Publish MQTT message
+deactivate MQTTBroker
+
+WemosD1Mini -> WemosD1Mini: Receive MQTT message
+WemosD1Mini --> User: Process status (true/false)
+
+deactivate QRScanner
+@enduml
