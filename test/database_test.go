@@ -1,14 +1,13 @@
 package test
 
 import (
-	"adriandidimqttgate/model"
+	"adriandidimqttgate/app"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestNewDB(t *testing.T) {
-	model.OpenConnection()
-	assert.NotNil(t, model.DB)
+	db := app.NewDBConnection()
+	assert.NotNil(t, db.DB)
 }
