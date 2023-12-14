@@ -6,6 +6,5 @@ import (
 )
 
 type AuthService interface {
-	Login(ctx context.Context, request web.LoginRequest) string
-	Register(ctx context.Context, request web.RegisterRequest)
+	Register(ctx context.Context, request web.RegisterRequest) web.RegisterResponse
 }

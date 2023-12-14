@@ -1,11 +1,11 @@
 package service
 
 import (
+	"adriandidimqttgate/helper"
 	"adriandidimqttgate/model/domain"
 	"adriandidimqttgate/model/web"
 	"adriandidimqttgate/repository"
 	"context"
-	"crypto/sha256"
 
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
@@ -17,34 +17,31 @@ type AuthServiceImpl struct {
 	Validate       *validator.Validate
 }
 
-func NewAuthService(UserRepository repository.UserRepository, DB *gorm.DB, validate *validator.Validate) AuthService {
+func NewAuthService(userRepository repository.UserRepository, DB *gorm.DB, validate *validator.Validate) AuthService {
 	return &AuthServiceImpl{
-		UserRepository: UserRepository,
+		UserRepository: userRepository,
 		DB:             DB,
 		Validate:       validate,
 	}
 }
 
-func (service *AuthServiceImpl) Login(ctx context.Context, request web.LoginRequest) string {
-	userRequest := domain.User{Email: request.Email}
-	userResponse, err := service.UserRepository.GetUserByEmail(ctx, service.DB, userRequest)
-	if err != nil {
-		return "user not found"
-	}
-	
-	hash := sha256.New()
-	hash.Write([]byte(request.Password))
-	encryptedRequestPassword := hash.Sum(nil)
+func (service *AuthServiceImpl) Register(ctx context.Context, request web.RegisterRequest) web.RegisterResponse {
+	err := service.Validate.Struct(request)
+	helper.PanicIfError(err)
 
-	if userResponse.Email != string(encryptedRequestPassword) {
-		return "wrong password"
+	user := domain.User{
+		Email:    request.Email,
+		Name:     request.Name,
+		Password: helper.HashPassword(request.Password),
+		OfficeID: request.OfficeID,
 	}
 
-	println(userResponse.Name)
+	user = service.UserRepository.Save(ctx, service.DB, user)
 
-	return "token"
-}
-
-func (service *AuthServiceImpl) Register(ctx context.Context, request web.RegisterRequest) {
-
+	return web.RegisterResponse{
+		ID:       user.ID,
+		Name:     user.Name,
+		Email:    user.Email,
+		OfficeID: user.OfficeID,
+	}
 }
