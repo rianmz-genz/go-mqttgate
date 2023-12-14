@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"adriandidimqttgate/helper"
 	"adriandidimqttgate/model/domain"
 	"context"
 
@@ -22,4 +23,13 @@ func (repository *UserRepositoryImpl) GetUserByEmail(ctx context.Context, db *go
 	}
 
 	return user, nil
+}
+
+func (respository UserRepositoryImpl) Save(ctx context.Context, db *gorm.DB, user domain.User) domain.User {
+	result := db.Create(&user)
+	if result.Error != nil {
+		helper.PanicIfError(result.Error)
+	}
+
+	return user
 }
