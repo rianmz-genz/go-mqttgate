@@ -3,20 +3,14 @@
 entity users {
     id
     --
+    name
+    --
     email
     --
     password
 }
 
-entity user_housing_areas {
-    id
-    --
-    user_id
-    --
-    housing_area_id
-}
-
-entity housing_areas {
+entity offices {
     id
     --
     name
@@ -26,7 +20,21 @@ entity housing_areas {
     address
 }
 
-housing_areas ||--o{ user_housing_areas
-users ||--o{ user_housing_areas
+entity enter_activities {
+    id
+    --
+    user_id
+    --
+    enter_at
+}
 
+entity sessions {
+    id
+    --
+    user_id
+}
+
+offices ||--o{ users
+users ||--o{ enter_activities
+users ||--o{ sessions
 @enduml

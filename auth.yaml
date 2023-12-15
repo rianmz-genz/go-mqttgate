@@ -1,0 +1,265 @@
+openapi: 3.0.2
+info:
+  title: "IITC:Auth"
+  description: API Spec for IITC
+  version: '1.0'
+  contact:
+    name: Intermedia
+    email: admin@intermediaamikom.org
+    url: https://intermediaamikom.org
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: https://iitc-api-production.up.railway.app/api
+  - url: http://127.0.0.1:8000/api
+tags:
+  - name: Auth
+    description: Operation about Authentication
+components:
+  parameters:
+    categoryId:
+      name: categoryId
+      in: path
+      schema:
+        type: 'string'
+      required: true
+    competitionSlug:
+      name: competitionSlug
+      in: path
+      schema:
+        type: 'string'
+      required: true
+    userCompetitionId:
+      name: userCompetitionId
+      in: path
+      schema:
+        type: 'string'
+      required: true
+    userId:
+      name: userId
+      in: path
+      schema:
+        type: 'string'
+      required: true
+    hashEmail:
+      name: hashEmail
+      in: path
+      schema:
+        type: 'string'
+      required: true
+    expiredVerifyEmail:
+      in: query
+      name: expires
+      schema:
+        type: string
+      required: true
+    signatureVerifyEmail:
+      in: query
+      name: signature
+      schema:
+        type: string
+      required: true
+  securitySchemes:
+    BearerToken:
+      type: http
+      scheme: bearer
+  schemas:
+    BasicResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+      required:
+        - status
+        - message
+paths:
+  /login:
+    post:
+      summary: user login
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              example:
+                email: johnDoe@gmail.com
+                password: myPassword
+      responses:
+        200:
+          description: user success login
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          access_token:
+                            type: string
+                example:
+                  status: 1
+                  message: user logged
+                  data:
+                    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+        401:
+          description: wrong password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+              example:
+                status: 0
+                message: login failed
+        400:
+          description: invalid username
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+              example:
+                status: 0
+                message: login failed
+  /register:
+    post:
+      summary: register
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                officeCode:
+                  type: number
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                  format: password
+              example:
+                officeCode: OFFTSG1
+                email: johnDoe@gmail.com
+                password: myPassword
+      responses:
+        200:
+          description: success registering new user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasicResponse'
+                type: object
+                properties:
+                  data: 
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          email:
+                            type: string
+                          fullName:
+                            type: string
+  /logout:
+    post:
+      tags:
+        - Auth
+      security:
+        - BearerToken: []
+      responses:
+        200:
+          description: user success logout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+  /verify-email/{userId}/{hashEmail}:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+      - $ref: '#/components/parameters/hashEmail'
+      - $ref: '#/components/parameters/expiredVerifyEmail'
+      - $ref: '#/components/parameters/signatureVerifyEmail'
+    get:
+      tags:
+        - Auth
+      security:
+        - BearerToken: []      
+      responses:
+        200:
+          description: verify email
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasicResponse'
+  /forgot-password:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+      responses:
+        200:
+          description: success request reset password
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token_reset_password:
+                            type: string
+  /reset-password:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: success reset password
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasicResponse'
+                  - type: object
+
