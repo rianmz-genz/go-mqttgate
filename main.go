@@ -24,12 +24,13 @@ var identityKey = "id"
 func helloHandler2(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
 	session, _ := c.Get(identityKey)
+	sessionId := uint(claims["id"].(float64))
 	response := web.WebResponse{
 		Code:    200,
 		Status:  "Success",
 		Message: "auth hello successfully",
 		Data: map[string]interface{}{
-			"sessionId": claims[identityKey],
+			"sessionId": sessionId,
 			"email":     session.(*web.SessionResponse).Email,
 			"text":      "Hello World.",
 		},
@@ -52,13 +53,18 @@ func main() {
 	r := gin.Default()
 	r.Use(ErrorHandler())
 
+	mqtt := app.NewMqttClient()
 	validator := validator.New()
 	db := app.NewDBConnection()
 	userRepository := repository.NewUserRepository()
+	officeRepository := repository.NewOfficeRepository()
+	enterActivityRepository := repository.NewEnterActivityRepository()
 	sessionRepository := repository.NewSessionRepository()
 	authService := service.NewAuthService(userRepository, db, validator)
+	qrService := service.NewQrService(enterActivityRepository, officeRepository, sessionRepository, userRepository, db, validator, mqtt)
 	authMiddleware := middleware.NewAuthMiddleware(r, db, userRepository, sessionRepository).Middleware()
 	authController := controller.NewAuthController(authService)
+	qrController := controller.NewQrController(qrService)
 
 	// When you use jwt.New(), the function is already automatically called for checking,
 	// which means you don't need to call it again.
@@ -118,6 +124,12 @@ func main() {
 	{
 		auth.GET("/hello", helloHandler2)
 		auth.POST("/logout", authMiddleware.LogoutHandler)
+	}
+
+	r.Use(authMiddleware.MiddlewareFunc())
+	{
+		r.POST("/scan-qr", qrController.ScanQr)
+		r.GET("/enter-activities")
 	}
 
 	r.Run(":6666")
