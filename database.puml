@@ -3,6 +3,8 @@
 entity users {
     id
     --
+    office_id
+    --
     name
     --
     email
