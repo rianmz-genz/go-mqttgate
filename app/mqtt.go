@@ -19,7 +19,8 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func NewMqttClient() mqtt.Client {
-	broker := "broker.emqx.io"
+	broker := "0.0.0.0"
+	// broker := "broker.emqx.io"
 	port := 1883
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
