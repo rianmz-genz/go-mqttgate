@@ -49,25 +49,26 @@ func ErrorHandler() gin.HandlerFunc {
 	}
 }
 func CORSMiddleware() gin.HandlerFunc {
-    return func(c *gin.Context) {
+	return func(c *gin.Context) {
 
-        c.Header("Access-Control-Allow-Origin", "*")
-        c.Header("Access-Control-Allow-Credentials", "true")
-        c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-        c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
 
-        if c.Request.Method == "OPTIONS" {
-            c.AbortWithStatus(204)
-            return
-        }
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
 
-        c.Next()
-    }
+		c.Next()
+	}
 }
 func main() {
 	r := gin.Default()
 	r.Use(ErrorHandler())
 	r.Use(CORSMiddleware())
+
 	mqtt := app.NewMqttClient()
 	validator := validator.New()
 	db := app.NewDBConnection()
@@ -131,10 +132,11 @@ func main() {
 	}
 	r.GET("/test", func(ctx *gin.Context) {
 		test := map[string]interface{}{
-			"p": "kontol",
+			"p": "hai",
 		}
 		ctx.JSON(200, test)
 	})
+	r.Use(ErrorHandler())
 	r.POST("/login", authMiddleware.LoginHandler)
 	r.POST("/register", authController.Register)
 
