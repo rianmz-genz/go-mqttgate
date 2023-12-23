@@ -13,7 +13,7 @@ func ErrorHandler(writer http.ResponseWriter, request *http.Request, err interfa
 	internalServerError(writer, request, err)
 }
 
-func notFoundError(writer http.ResponseWriter, https *http.Request, err interface{}) bool {
+func notFoundError(writer http.ResponseWriter, _ *http.Request, err interface{}) bool {
 	exception, ok := err.(NotFoundError)
 	if ok {
 		writer.Header().Set("Content-Type", "application/json")
@@ -32,7 +32,7 @@ func notFoundError(writer http.ResponseWriter, https *http.Request, err interfac
 	return false
 }
 
-func internalServerError(writer http.ResponseWriter, request *http.Request, err interface{}) {
+func internalServerError(writer http.ResponseWriter, _ *http.Request, err interface{}) {
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusInternalServerError)
 
