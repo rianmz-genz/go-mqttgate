@@ -23,10 +23,10 @@ type AuthMiddleware struct {
 	Handler           http.Handler
 	DB                *gorm.DB
 	userRepository    repository.UserRepository
-	sessionRepository repository.SessionReposioty
+	sessionRepository repository.SessionRepository
 }
 
-func NewAuthMiddleware(handler http.Handler, DB *gorm.DB, userRepository repository.UserRepository, sessionRepository repository.SessionReposioty) *AuthMiddleware {
+func NewAuthMiddleware(handler http.Handler, DB *gorm.DB, userRepository repository.UserRepository, sessionRepository repository.SessionRepository) *AuthMiddleware {
 	return &AuthMiddleware{
 		Handler:           handler,
 		DB:                DB,
@@ -65,6 +65,7 @@ func (middleware *AuthMiddleware) Middleware() *jwt.GinJWTMiddleware {
 				SessionID: session.ID,
 				Name:      user.Name,
 				Email:     user.Email,
+				UserId:    user.ID,
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
