@@ -19,7 +19,7 @@ type QrServiceImpl struct {
 	EnterActivityRepository repository.EnterActivityRepository
 	OfficeRepository        repository.OfficeRepository
 	UserRepository          repository.UserRepository
-	SessionRepository       repository.SessionReposioty
+	SessionRepository       repository.SessionRepository
 	DB                      *gorm.DB
 	Validate                *validator.Validate
 	MQTT                    mqtt.Client
@@ -28,7 +28,7 @@ type QrServiceImpl struct {
 func NewQrService(
 	enterActivityRepository repository.EnterActivityRepository,
 	officeRepository repository.OfficeRepository,
-	sessionRepository repository.SessionReposioty,
+	sessionRepository repository.SessionRepository,
 	userRepository repository.UserRepository,
 	DB *gorm.DB, validate *validator.Validate,
 	mqtt mqtt.Client,
