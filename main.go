@@ -48,11 +48,26 @@ func ErrorHandler() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
+func CORSMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
 
+        c.Header("Access-Control-Allow-Origin", "*")
+        c.Header("Access-Control-Allow-Credentials", "true")
+        c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+        c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
+
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(204)
+            return
+        }
+
+        c.Next()
+    }
+}
 func main() {
 	r := gin.Default()
 	r.Use(ErrorHandler())
-
+	r.Use(CORSMiddleware())
 	mqtt := app.NewMqttClient()
 	validator := validator.New()
 	db := app.NewDBConnection()
@@ -114,7 +129,12 @@ func main() {
 		seeder.UserSeeder()
 		seeder.SessionSeeder()
 	}
-
+	r.GET("/test", func(ctx *gin.Context) {
+		test := map[string]interface{}{
+			"p": "kontol",
+		}
+		ctx.JSON(200, test)
+	})
 	r.POST("/login", authMiddleware.LoginHandler)
 	r.POST("/register", authController.Register)
 
@@ -132,5 +152,5 @@ func main() {
 		r.GET("/enter-activities")
 	}
 
-	r.Run(":6666")
+	r.Run(":8888")
 }
