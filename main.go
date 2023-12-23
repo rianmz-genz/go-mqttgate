@@ -155,6 +155,7 @@ func main() {
 	{
 		userRoutes.GET("/profile", userController.Profile)
 		userRoutes.PUT("/:userId", userController.Update)
+		userRoutes.DELETE("/:userId", userController.Delete)
 	}
 
 	auth := r.Group("/auth")

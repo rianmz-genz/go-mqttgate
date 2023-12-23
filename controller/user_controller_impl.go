@@ -66,3 +66,23 @@ func (controller UserControllerImpl) Update(c *gin.Context) {
 
 	helper.WriteToResponseBody(c.Writer, webResponse)
 }
+
+func (controller UserControllerImpl) Delete(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	sessionId := uint(claims["id"].(float64))
+
+	result, err := strconv.Atoi(c.Param("userId"))
+	helper.PanicIfError(err)
+	userId := uint(result)
+
+	controller.UserService.Delete(c, sessionId, userId)
+
+	webResponse := web.WebResponse{
+		Status:  "Success",
+		Code:    200,
+		Message: "Delete User Successfully",
+		Data:    map[string]interface{}{},
+	}
+
+	helper.WriteToResponseBody(c.Writer, webResponse)
+}

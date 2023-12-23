@@ -44,14 +44,6 @@ func (repository UserRepositoryImpl) GetUserById(ctx context.Context, db *gorm.D
 }
 
 func (repository UserRepositoryImpl) Update(ctx context.Context, db *gorm.DB, user domain.User) domain.User {
-	//userUpdate := domain.User{}
-	//userUpdate.ID = user.ID
-	//
-	//db.WithContext(ctx).First(&userUpdate)
-	//userUpdate.Name = user.Name
-	//userUpdate.Email = user.Email
-	//userUpdate.OfficeID = user.OfficeID
-
 	result := db.WithContext(ctx).Save(&user)
 
 	if result.Error != nil {
@@ -59,4 +51,12 @@ func (repository UserRepositoryImpl) Update(ctx context.Context, db *gorm.DB, us
 	}
 
 	return user
+}
+
+func (repository UserRepositoryImpl) Delete(ctx context.Context, db *gorm.DB, userId uint) {
+	result := db.WithContext(ctx).Delete(&domain.User{}, userId)
+
+	if result.Error != nil {
+		helper.PanicIfError(result.Error)
+	}
 }

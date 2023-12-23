@@ -61,16 +61,29 @@ func (service UserServiceImpl) Update(ctx context.Context, request web.UserUpdat
 	errValidate := service.Validate.Struct(request)
 	helper.PanicIfError(errValidate)
 
-	user := domain.User{
-		Name:     request.Name,
-		Email:    request.Email,
-		OfficeID: request.OfficeID,
-	}
-	user.ID = userId
+	user := service.UserRepository.GetUserById(ctx, service.DB, userId)
+
+	user.Name = request.Name
+	user.Email = request.Email
+	user.OfficeID = request.OfficeID
+
+	user = service.UserRepository.Update(ctx, service.DB, user)
 
 	return web.UserUpdateResponse{
 		Name:     user.Name,
 		Email:    user.Email,
 		OfficeID: user.OfficeID,
 	}, nil
+}
+
+func (service UserServiceImpl) Delete(ctx context.Context, sessionId uint, userId uint) {
+	session, err := service.SessionRepository.GetSessionById(ctx, service.DB, sessionId)
+	helper.PanicIfError(err)
+
+	auth := service.UserRepository.GetUserById(ctx, service.DB, session.UserID)
+	if auth.Role.Name != "Admin" && auth.ID != userId {
+		panic("unauthorized")
+	}
+
+	service.UserRepository.Delete(ctx, service.DB, userId)
 }

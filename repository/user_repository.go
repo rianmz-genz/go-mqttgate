@@ -12,4 +12,5 @@ type UserRepository interface {
 	Save(ctx context.Context, db *gorm.DB, user domain.User) domain.User
 	GetUserById(ctx context.Context, db *gorm.DB, userId uint) domain.User
 	Update(ctx context.Context, db *gorm.DB, user domain.User) domain.User
+	Delete(ctx context.Context, db *gorm.DB, userId uint)
 }
