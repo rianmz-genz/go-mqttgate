@@ -124,7 +124,8 @@ func (middleware *AuthMiddleware) Middleware() *jwt.GinJWTMiddleware {
 			fmt.Println(userResponse)
 			sessionId := userResponse.(*web.SessionResponse).SessionID
 
-			middleware.sessionRepository.DeleteSessionById(c, middleware.DB, sessionId)
+			_, err := middleware.sessionRepository.DeleteSessionById(c, middleware.DB, sessionId)
+			helper.PanicIfError(err)
 
 			response := web.WebResponse{
 				Status:  "Success",
