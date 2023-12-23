@@ -101,6 +101,7 @@ func main() {
 		&domain.User{},
 		&domain.Session{},
 		&domain.EnterActivity{},
+		&domain.Role{},
 	}
 
 	fmt.Println("Hello!")
@@ -126,6 +127,7 @@ func main() {
 	}
 
 	if s == "seed" {
+		seeder.RoleSeeder()
 		seeder.OfficeSeeder()
 		seeder.UserSeeder()
 		seeder.SessionSeeder()
