@@ -16,7 +16,7 @@ func NewUserRepository() UserRepository {
 }
 
 func (repository *UserRepositoryImpl) GetUserByEmail(ctx context.Context, db *gorm.DB, user domain.User) (domain.User, error) {
-	result := db.Where("email = ?", user.Email).First(&user)
+	result := db.WithContext(ctx).Where("email = ?", user.Email).First(&user)
 
 	if result.Error != nil {
 		return user, result.Error
@@ -25,8 +25,8 @@ func (repository *UserRepositoryImpl) GetUserByEmail(ctx context.Context, db *go
 	return user, nil
 }
 
-func (respository *UserRepositoryImpl) Save(ctx context.Context, db *gorm.DB, user domain.User) domain.User {
-	result := db.Create(&user)
+func (repository *UserRepositoryImpl) Save(ctx context.Context, db *gorm.DB, user domain.User) domain.User {
+	result := db.WithContext(ctx).Create(&user)
 	if result.Error != nil {
 		helper.PanicIfError(result.Error)
 	}
@@ -34,9 +34,9 @@ func (respository *UserRepositoryImpl) Save(ctx context.Context, db *gorm.DB, us
 	return user
 }
 
-func (respository *UserRepositoryImpl) GetUserById(ctx context.Context, db *gorm.DB, userId uint) domain.User {
+func (repository *UserRepositoryImpl) GetUserById(ctx context.Context, db *gorm.DB, userId uint) domain.User {
 	user := domain.User{}
-	result := db.Where("id = ?", userId).Preload("Office").First(&user)
+	result := db.WithContext(ctx).Where("id = ?", userId).Preload("Office").Preload("Role").First(&user)
 	if result.Error != nil {
 		helper.PanicIfError(result.Error)
 	}

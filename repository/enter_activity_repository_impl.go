@@ -9,7 +9,6 @@ import (
 )
 
 type EnterActivityRepositoryImpl struct {
-	
 }
 
 func NewEnterActivityRepository() EnterActivityRepository {
@@ -17,7 +16,7 @@ func NewEnterActivityRepository() EnterActivityRepository {
 }
 
 func (repository EnterActivityRepositoryImpl) Save(ctx context.Context, db *gorm.DB, enterActivity domain.EnterActivity) uint {
-	result := db.Create(&enterActivity)
+	result := db.WithContext(ctx).Create(&enterActivity)
 
 	if result.Error != nil {
 		helper.PanicIfError(result.Error)
