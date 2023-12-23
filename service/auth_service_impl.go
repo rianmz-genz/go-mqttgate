@@ -25,7 +25,7 @@ func NewAuthService(userRepository repository.UserRepository, DB *gorm.DB, valid
 	}
 }
 
-func (service *AuthServiceImpl) Register(ctx context.Context, request web.RegisterRequest) web.RegisterResponse {
+func (service AuthServiceImpl) Register(ctx context.Context, request web.RegisterRequest) web.RegisterResponse {
 	err := service.Validate.Struct(request)
 	helper.PanicIfError(err)
 
@@ -34,6 +34,7 @@ func (service *AuthServiceImpl) Register(ctx context.Context, request web.Regist
 		Name:     request.Name,
 		Password: helper.HashPassword(request.Password),
 		OfficeID: request.OfficeID,
+		RoleID:   1,
 	}
 
 	user = service.UserRepository.Save(ctx, service.DB, user)

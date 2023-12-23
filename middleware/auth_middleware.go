@@ -52,8 +52,6 @@ func (middleware *AuthMiddleware) Middleware() *jwt.GinJWTMiddleware {
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			fmt.Println(claims)
-			fmt.Println(claims["id"].(float64))
 			idUint := uint(claims["id"].(float64))
 			session, err := middleware.sessionRepository.GetSessionById(c, middleware.DB, idUint)
 			if err != nil {

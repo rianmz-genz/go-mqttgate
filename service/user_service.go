@@ -7,4 +7,5 @@ import (
 
 type UserService interface {
 	GetUserById(ctx context.Context, userId uint) web.UserResponse
+	Update(ctx context.Context, request web.UserUpdateRequest, sessionId uint, userId uint) (web.UserUpdateResponse, error)
 }

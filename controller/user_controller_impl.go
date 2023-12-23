@@ -4,6 +4,7 @@ import (
 	"adriandidimqttgate/helper"
 	"adriandidimqttgate/model/web"
 	"adriandidimqttgate/service"
+	"strconv"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -21,7 +22,7 @@ func NewUserController(userService service.UserService, sessionService service.S
 	}
 }
 
-func (controller *UserControllerImpl) Profile(c *gin.Context) {
+func (controller UserControllerImpl) Profile(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
 	sessionId := uint(claims["id"].(float64))
 
@@ -34,6 +35,32 @@ func (controller *UserControllerImpl) Profile(c *gin.Context) {
 		Message: "Get User Profile Successfully",
 		Data: map[string]interface{}{
 			"user": userResponse,
+		},
+	}
+
+	helper.WriteToResponseBody(c.Writer, webResponse)
+}
+
+func (controller UserControllerImpl) Update(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	sessionId := uint(claims["id"].(float64))
+
+	result, err := strconv.Atoi(c.Param("userId"))
+	helper.PanicIfError(err)
+	userId := uint(result)
+
+	updateUserRequest := web.UserUpdateRequest{}
+	helper.ReadFromRequestBody(c.Request, &updateUserRequest)
+
+	userUpdateResponse, errUpdate := controller.UserService.Update(c, updateUserRequest, sessionId, userId)
+	helper.PanicIfError(errUpdate)
+
+	webResponse := web.WebResponse{
+		Status:  "Success",
+		Code:    200,
+		Message: "Update User Successfully",
+		Data: map[string]interface{}{
+			"user": userUpdateResponse,
 		},
 	}
 

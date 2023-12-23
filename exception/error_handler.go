@@ -3,7 +3,6 @@ package exception
 import (
 	"adriandidimqttgate/helper"
 	"adriandidimqttgate/model/web"
-	"fmt"
 	"net/http"
 )
 
@@ -36,8 +35,6 @@ func notFoundError(writer http.ResponseWriter, https *http.Request, err interfac
 func internalServerError(writer http.ResponseWriter, request *http.Request, err interface{}) {
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusInternalServerError)
-
-	fmt.Println(err)
 
 	webResponse := web.WebResponse{
 		Status:  "Fail",

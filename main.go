@@ -77,7 +77,7 @@ func main() {
 	officeRepository := repository.NewOfficeRepository()
 	enterActivityRepository := repository.NewEnterActivityRepository()
 	sessionRepository := repository.NewSessionRepository()
-	userService := service.NewUserService(userRepository, db)
+	userService := service.NewUserService(userRepository, sessionRepository, db, validatorRequest)
 	sessionService := service.NewSessionService(sessionRepository, db)
 	authService := service.NewAuthService(userRepository, db, validatorRequest)
 	qrService := service.NewQrService(enterActivityRepository, officeRepository, sessionRepository, userRepository, db, validatorRequest, mqtt)
@@ -150,9 +150,11 @@ func main() {
 	r.POST("/login", authMiddleware.LoginHandler)
 	r.POST("/register", authController.Register)
 
-	r.Use(authMiddleware.MiddlewareFunc())
+	userRoutes := r.Group("/users")
+	userRoutes.Use(authMiddleware.MiddlewareFunc())
 	{
-		r.GET("/profile", userController.Profile)
+		userRoutes.GET("/profile", userController.Profile)
+		userRoutes.PUT("/:userId", userController.Update)
 	}
 
 	auth := r.Group("/auth")
