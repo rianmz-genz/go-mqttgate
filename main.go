@@ -73,18 +73,23 @@ func main() {
 	mqtt := app.NewMqttClient()
 	validatorRequest := validator.New()
 	db := app.NewDBConnection()
+
 	userRepository := repository.NewUserRepository()
 	officeRepository := repository.NewOfficeRepository()
 	enterActivityRepository := repository.NewEnterActivityRepository()
 	sessionRepository := repository.NewSessionRepository()
+
 	userService := service.NewUserService(userRepository, sessionRepository, db, validatorRequest)
 	sessionService := service.NewSessionService(sessionRepository, db)
 	authService := service.NewAuthService(userRepository, db, validatorRequest)
 	qrService := service.NewQrService(enterActivityRepository, officeRepository, sessionRepository, userRepository, db, validatorRequest, mqtt)
+	officeService := service.NewOfficeService(userRepository, sessionRepository, enterActivityRepository, db)
+
 	authMiddleware := middleware.NewAuthMiddleware(r, db, userRepository, sessionRepository).Middleware()
 	authController := controller.NewAuthController(authService)
 	qrController := controller.NewQrController(qrService)
 	userController := controller.NewUserController(userService, sessionService)
+	OfficeController := controller.NewOfficeController(officeService)
 
 	// When you use jwt.New(), the function is already automatically called for checking,
 	// which means you don't need to call it again.
@@ -169,7 +174,7 @@ func main() {
 	r.Use(authMiddleware.MiddlewareFunc())
 	{
 		r.POST("/scan-qr", qrController.ScanQr)
-		r.GET("/enter-activities")
+		r.GET("/offices/:officeId/entry-activities", OfficeController.GetEnterActivitiesByOfficeId)
 	}
 
 	err := r.Run(":8888")
