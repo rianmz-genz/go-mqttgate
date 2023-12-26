@@ -65,3 +65,23 @@ func (controller OfficeControllerImpl) CloseGate(c *gin.Context) {
 
 	helper.WriteToResponseBody(c.Writer, webResponse)
 }
+
+func (controller OfficeControllerImpl) AddOffice(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	sessionId := uint(claims["id"].(float64))
+
+	officeRequest := web.AddOfficeRequest{}
+	helper.ReadFromRequestBody(c.Request, &officeRequest)
+	officeResponse := controller.OfficeService.Add(c, officeRequest, sessionId)
+
+	webResponse := web.WebResponse{
+		Status:  "Success",
+		Code:    201,
+		Message: "New Office Created",
+		Data: map[string]interface{}{
+			"office": officeResponse,
+		},
+	}
+
+	helper.WriteToResponseBody(c.Writer, webResponse)
+}

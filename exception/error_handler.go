@@ -9,8 +9,30 @@ import (
 func ErrorHandler(writer http.ResponseWriter, request *http.Request, err interface{}) {
 	if notFoundError(writer, request, err) {
 		return
+	} else if forbiddenError(writer, request, err) {
+		return
 	}
 	internalServerError(writer, request, err)
+}
+
+func forbiddenError(writer http.ResponseWriter, _ *http.Request, err interface{}) bool {
+	exception, ok := err.(ForbiddenError)
+	if ok {
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusForbidden)
+
+		webResponse := web.WebResponse{
+			Status:  "Fail",
+			Code:    http.StatusForbidden,
+			Message: "User doesn't have match permission",
+			Data:    exception.Error,
+		}
+
+		helper.WriteToResponseBody(writer, webResponse)
+		return true
+	}
+
+	return false
 }
 
 func notFoundError(writer http.ResponseWriter, _ *http.Request, err interface{}) bool {

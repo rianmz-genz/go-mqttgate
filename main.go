@@ -83,7 +83,7 @@ func main() {
 	sessionService := service.NewSessionService(sessionRepository, db)
 	authService := service.NewAuthService(userRepository, db, validatorRequest)
 	qrService := service.NewQrService(enterActivityRepository, officeRepository, sessionRepository, userRepository, db, validatorRequest, mqtt)
-	officeService := service.NewOfficeService(userRepository, sessionRepository, enterActivityRepository, db, mqtt)
+	officeService := service.NewOfficeService(officeRepository, userRepository, sessionRepository, enterActivityRepository, db, mqtt, validatorRequest)
 
 	authMiddleware := middleware.NewAuthMiddleware(r, db, userRepository, sessionRepository).Middleware()
 	authController := controller.NewAuthController(authService)
@@ -176,6 +176,7 @@ func main() {
 		r.POST("/scan-qr", qrController.ScanQr)
 		r.GET("/offices/:officeId/entry-activities", OfficeController.GetEnterActivitiesByOfficeId)
 		r.POST("/offices/:officeId/close-gate", OfficeController.CloseGate)
+		r.POST("/offices", OfficeController.AddOffice)
 	}
 
 	err := r.Run(":8888")
