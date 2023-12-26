@@ -69,13 +69,20 @@ func (service QrServiceImpl) ScanQr(ctx context.Context, request web.ScanQrReque
 	service.EnterActivityRepository.Save(ctx, service.DB, enterActivity)
 
 	// send mqtt message
+
+	closeResponse := web.MqttGateResponse{
+		Type: "Open",
+		Name: user.Name,
+	}
+	jsonMqttResponse, err := json.Marshal(closeResponse)
+	helper.PanicIfError(err)
+
+	service.MQTT.Publish("office/"+string(user.Office.Code), 0, false, jsonMqttResponse)
+
 	scanQrResponse := web.ScanQrResponse{
 		Username:   user.Name,
 		OfficeName: user.Office.Name,
 	}
-	responseJson, err := json.Marshal(scanQrResponse)
-	helper.PanicIfError(err)
-	service.MQTT.Publish("office/"+string(user.Office.Code), 0, false, responseJson)
 
 	return scanQrResponse
 }
