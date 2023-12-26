@@ -32,12 +32,34 @@ func (controller OfficeControllerImpl) GetEnterActivitiesByOfficeId(c *gin.Conte
 	helper.PanicIfError(err)
 
 	webResponse := web.WebResponse{
-		Status: "Success",
-
+		Status:  "Success",
 		Code:    200,
 		Message: "Get Enter Activities By Office Id Successfully",
 		Data: map[string]interface{}{
 			"enterActivities": enterActivities,
+		},
+	}
+
+	helper.WriteToResponseBody(c.Writer, webResponse)
+}
+
+func (controller OfficeControllerImpl) CloseGate(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	sessionId := uint(claims["id"].(float64))
+
+	result, err := strconv.Atoi(c.Param("officeId"))
+	helper.PanicIfError(err)
+	officeId := uint(result)
+
+	closeGateResponse, err := controller.OfficeService.CloseGate(c, sessionId, officeId)
+	helper.PanicIfError(err)
+
+	webResponse := web.WebResponse{
+		Status:  "Success",
+		Code:    200,
+		Message: "Close Gate Successfully",
+		Data: map[string]interface{}{
+			"detail": closeGateResponse,
 		},
 	}
 
