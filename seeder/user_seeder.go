@@ -10,6 +10,7 @@ func UserSeeder() {
 	email1 := "user1@gmail.com"
 	email2 := "ucup@gmail.com"
 	email3 := "admin@gmail.com"
+	superAdminEmail := "super_admin@gmail.com"
 	password := "password"
 	passwordEncrypted := helper.HashPassword(password)
 
@@ -37,7 +38,15 @@ func UserSeeder() {
 		RoleID:   2,
 	}
 
-	users := []domain.User{user1, user2, admin1}
+	superAdmin := domain.User{
+		Name:     "Super Admin",
+		Email:    superAdminEmail,
+		Password: passwordEncrypted,
+		OfficeID: 1,
+		RoleID:   3,
+	}
+
+	users := []domain.User{user1, user2, admin1, superAdmin}
 
 	if err := app.NewDBConnection().CreateInBatches(users, 3).Error; err != nil {
 		panic(err.Error())
