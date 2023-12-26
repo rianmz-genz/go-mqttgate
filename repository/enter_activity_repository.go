@@ -9,6 +9,5 @@ import (
 
 type EnterActivityRepository interface {
 	Save(ctx context.Context, db *gorm.DB, enterActivity domain.EnterActivity) uint
-	GetByOfficeId(ctx context.Context, db *gorm.DB, officeId uint) []domain.EnterActivity
 	GetByUserIds(ctx context.Context, db *gorm.DB, userIds ...uint) []domain.EnterActivity
 }

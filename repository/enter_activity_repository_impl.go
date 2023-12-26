@@ -25,16 +25,6 @@ func (repository EnterActivityRepositoryImpl) Save(ctx context.Context, db *gorm
 	return enterActivity.ID
 }
 
-func (repository EnterActivityRepositoryImpl) GetByOfficeId(ctx context.Context, db *gorm.DB, officeId uint) []domain.EnterActivity {
-	var enterActivities []domain.EnterActivity
-	result := db.WithContext(ctx).Where("office_id", officeId).Find(&enterActivities)
-	if result.Error != nil {
-		helper.PanicIfError(result.Error)
-	}
-
-	return enterActivities
-}
-
 func (repository EnterActivityRepositoryImpl) GetByUserIds(ctx context.Context, db *gorm.DB, userIds ...uint) []domain.EnterActivity {
 	var enterActivities []domain.EnterActivity
 	result := db.WithContext(ctx).Where("user_id IN ?", userIds).Preload("User").Find(&enterActivities)
