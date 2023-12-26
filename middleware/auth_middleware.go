@@ -23,10 +23,10 @@ type AuthMiddleware struct {
 	Handler           http.Handler
 	DB                *gorm.DB
 	userRepository    repository.UserRepository
-	sessionRepository repository.SessionReposioty
+	sessionRepository repository.SessionRepository
 }
 
-func NewAuthMiddleware(handler http.Handler, DB *gorm.DB, userRepository repository.UserRepository, sessionRepository repository.SessionReposioty) *AuthMiddleware {
+func NewAuthMiddleware(handler http.Handler, DB *gorm.DB, userRepository repository.UserRepository, sessionRepository repository.SessionRepository) *AuthMiddleware {
 	return &AuthMiddleware{
 		Handler:           handler,
 		DB:                DB,
@@ -52,8 +52,6 @@ func (middleware *AuthMiddleware) Middleware() *jwt.GinJWTMiddleware {
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			fmt.Println(claims)
-			fmt.Println(claims["id"].(float64))
 			idUint := uint(claims["id"].(float64))
 			session, err := middleware.sessionRepository.GetSessionById(c, middleware.DB, idUint)
 			if err != nil {
@@ -65,6 +63,7 @@ func (middleware *AuthMiddleware) Middleware() *jwt.GinJWTMiddleware {
 				SessionID: session.ID,
 				Name:      user.Name,
 				Email:     user.Email,
+				UserId:    user.ID,
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -123,7 +122,8 @@ func (middleware *AuthMiddleware) Middleware() *jwt.GinJWTMiddleware {
 			fmt.Println(userResponse)
 			sessionId := userResponse.(*web.SessionResponse).SessionID
 
-			middleware.sessionRepository.DeleteSessionById(c, middleware.DB, sessionId)
+			_, err := middleware.sessionRepository.DeleteSessionById(c, middleware.DB, sessionId)
+			helper.PanicIfError(err)
 
 			response := web.WebResponse{
 				Status:  "Success",

@@ -7,17 +7,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type SessionReposiotyImpl struct {
+type SessionRepositoryImpl struct {
 }
 
-func NewSessionRepository() SessionReposioty {
-	return &SessionReposiotyImpl{}
+func NewSessionRepository() SessionRepository {
+	return &SessionRepositoryImpl{}
 }
 
-func (repository *SessionReposiotyImpl) GetSessionById(ctx context.Context, db *gorm.DB, sessionId uint) (domain.Session, error) {
+func (repository *SessionRepositoryImpl) GetSessionById(ctx context.Context, db *gorm.DB, sessionId uint) (domain.Session, error) {
 	var session = domain.Session{}
 
-	result := db.Where("id = ?", sessionId).Preload("User").First(&session)
+	result := db.WithContext(ctx).Where("id = ?", sessionId).Preload("User").First(&session)
 
 	if result.Error != nil {
 		return session, result.Error
@@ -26,9 +26,9 @@ func (repository *SessionReposiotyImpl) GetSessionById(ctx context.Context, db *
 	return session, nil
 }
 
-func (repository *SessionReposiotyImpl) Save(ctx context.Context, db *gorm.DB, userId uint) (uint, error) {
+func (repository *SessionRepositoryImpl) Save(ctx context.Context, db *gorm.DB, userId uint) (uint, error) {
 	session := domain.Session{UserID: userId}
-	result := db.Create(&session)
+	result := db.WithContext(ctx).Create(&session)
 
 	if result.Error != nil {
 		return 0, result.Error
@@ -37,9 +37,9 @@ func (repository *SessionReposiotyImpl) Save(ctx context.Context, db *gorm.DB, u
 	return session.ID, nil
 }
 
-func (repository *SessionReposiotyImpl) DeleteSessionById(ctx context.Context, db *gorm.DB, sessionId uint) (uint, error) {
+func (repository *SessionRepositoryImpl) DeleteSessionById(ctx context.Context, db *gorm.DB, sessionId uint) (uint, error) {
 	session := domain.Session{}
-	result := db.Where("id = ?", sessionId).Delete(&session)
+	result := db.WithContext(ctx).Where("id = ?", sessionId).Delete(&session)
 
 	if result.Error != nil {
 		return 0, result.Error

@@ -16,7 +16,7 @@ func UserSeeder() {
 	user1 := domain.User{
 		Name:     "Coba",
 		Email:    email1,
-		Password: string(passwordEncrypted),
+		Password: passwordEncrypted,
 		OfficeID: 1,
 		RoleID:   1,
 	}
@@ -24,7 +24,7 @@ func UserSeeder() {
 	user2 := domain.User{
 		Name:     "Ucup",
 		Email:    email2,
-		Password: string(passwordEncrypted),
+		Password: passwordEncrypted,
 		OfficeID: 1,
 		RoleID:   1,
 	}
@@ -32,9 +32,9 @@ func UserSeeder() {
 	admin1 := domain.User{
 		Name:     "Admin",
 		Email:    email3,
-		Password: string(passwordEncrypted),
+		Password: passwordEncrypted,
 		OfficeID: 1,
-		RoleID:   1,
+		RoleID:   2,
 	}
 
 	users := []domain.User{user1, user2, admin1}

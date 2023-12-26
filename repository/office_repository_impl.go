@@ -16,7 +16,7 @@ func NewOfficeRepository() OfficeRepository {
 
 func (repository *OfficeRepositoryImpl) FindOfficeByCode(ctx context.Context, db *gorm.DB, code string) domain.Office {
 	office := domain.Office{}
-	db.Where("id = ?", code).Preload("").First(office)
+	db.WithContext(ctx).Where("id = ?", code).Preload("").First(office)
 
 	return office
 }

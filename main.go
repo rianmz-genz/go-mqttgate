@@ -4,6 +4,7 @@ import (
 	"adriandidimqttgate/app"
 	"adriandidimqttgate/controller"
 	"adriandidimqttgate/exception"
+	"adriandidimqttgate/helper"
 	"adriandidimqttgate/middleware"
 	"adriandidimqttgate/model/domain"
 	"adriandidimqttgate/model/web"
@@ -70,17 +71,25 @@ func main() {
 	r.Use(CORSMiddleware())
 
 	mqtt := app.NewMqttClient()
-	validator := validator.New()
+	validatorRequest := validator.New()
 	db := app.NewDBConnection()
+
 	userRepository := repository.NewUserRepository()
 	officeRepository := repository.NewOfficeRepository()
 	enterActivityRepository := repository.NewEnterActivityRepository()
 	sessionRepository := repository.NewSessionRepository()
-	authService := service.NewAuthService(userRepository, db, validator)
-	qrService := service.NewQrService(enterActivityRepository, officeRepository, sessionRepository, userRepository, db, validator, mqtt)
+
+	userService := service.NewUserService(userRepository, sessionRepository, db, validatorRequest)
+	sessionService := service.NewSessionService(sessionRepository, db)
+	authService := service.NewAuthService(userRepository, db, validatorRequest)
+	qrService := service.NewQrService(enterActivityRepository, officeRepository, sessionRepository, userRepository, db, validatorRequest, mqtt)
+	officeService := service.NewOfficeService(userRepository, sessionRepository, enterActivityRepository, db)
+
 	authMiddleware := middleware.NewAuthMiddleware(r, db, userRepository, sessionRepository).Middleware()
 	authController := controller.NewAuthController(authService)
 	qrController := controller.NewQrController(qrService)
+	userController := controller.NewUserController(userService, sessionService)
+	OfficeController := controller.NewOfficeController(officeService)
 
 	// When you use jwt.New(), the function is already automatically called for checking,
 	// which means you don't need to call it again.
@@ -112,16 +121,20 @@ func main() {
 	flag.Parse()
 
 	if m == "migrate" {
-		db.AutoMigrate(tables...)
+		err := db.AutoMigrate(tables...)
+		helper.PanicIfError(err)
 	} else if m == "rollback" {
 		for i := 0; i < len(tables); i++ {
-			db.Migrator().DropTable(tables...)
+			err := db.Migrator().DropTable(tables...)
+			helper.PanicIfError(err)
 		}
 	} else if m == "refresh" {
 		for i := 0; i < len(tables); i++ {
-			db.Migrator().DropTable(tables...)
+			err := db.Migrator().DropTable(tables...)
+			helper.PanicIfError(err)
 		}
-		db.AutoMigrate(tables...)
+		err := db.AutoMigrate(tables...)
+		helper.PanicIfError(err)
 	} else {
 		print("Flag not found")
 	}
@@ -142,6 +155,14 @@ func main() {
 	r.POST("/login", authMiddleware.LoginHandler)
 	r.POST("/register", authController.Register)
 
+	userRoutes := r.Group("/users")
+	userRoutes.Use(authMiddleware.MiddlewareFunc())
+	{
+		userRoutes.GET("/profile", userController.Profile)
+		userRoutes.PUT("/:userId", userController.Update)
+		userRoutes.DELETE("/:userId", userController.Delete)
+	}
+
 	auth := r.Group("/auth")
 	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
 	auth.Use(authMiddleware.MiddlewareFunc())
@@ -153,8 +174,9 @@ func main() {
 	r.Use(authMiddleware.MiddlewareFunc())
 	{
 		r.POST("/scan-qr", qrController.ScanQr)
-		r.GET("/enter-activities")
+		r.GET("/offices/:officeId/entry-activities", OfficeController.GetEnterActivitiesByOfficeId)
 	}
 
-	r.Run(":8888")
+	err := r.Run(":8888")
+	helper.PanicIfError(err)
 }
