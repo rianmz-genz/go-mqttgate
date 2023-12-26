@@ -1,7 +1,9 @@
 package service
 
 import (
+	"adriandidimqttgate/exception"
 	"adriandidimqttgate/helper"
+	"adriandidimqttgate/model/domain"
 	"adriandidimqttgate/model/web"
 	"adriandidimqttgate/repository"
 	"context"
@@ -10,30 +12,38 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 type OfficeServiceImpl struct {
+	OfficeRepository        repository.OfficeRepository
 	UserRepository          repository.UserRepository
 	SessionRepository       repository.SessionRepository
 	EnterActivityRepository repository.EnterActivityRepository
 	DB                      *gorm.DB
 	MQTT                    mqtt.Client
+	Validate                *validator.Validate
 }
 
 func NewOfficeService(
+	officeRepository repository.OfficeRepository,
 	userrepository repository.UserRepository,
 	sessionRepository repository.SessionRepository,
 	enterActivityRepository repository.EnterActivityRepository,
-	DB *gorm.DB, mqtt mqtt.Client,
+	DB *gorm.DB,
+	mqtt mqtt.Client,
+	validate *validator.Validate,
 ) OfficeService {
 
 	return &OfficeServiceImpl{
+		OfficeRepository:        officeRepository,
 		UserRepository:          userrepository,
 		SessionRepository:       sessionRepository,
 		EnterActivityRepository: enterActivityRepository,
 		DB:                      DB,
 		MQTT:                    mqtt,
+		Validate:                validate,
 	}
 }
 
@@ -96,4 +106,33 @@ func (service OfficeServiceImpl) CloseGate(ctx context.Context, sessionId uint, 
 	}
 
 	return closeGaateResponse, nil
+}
+
+func (service OfficeServiceImpl) Add(ctx context.Context, request web.AddOfficeRequest, sessionId uint) web.AddOfficeResponse {
+	session, err := service.SessionRepository.GetSessionById(ctx, service.DB, sessionId)
+	helper.PanicIfError(err)
+
+	auth := service.UserRepository.GetUserById(ctx, service.DB, session.UserID)
+
+	if auth.Role.Name != "Super Admin" {
+		panic(exception.NewForbiddenError("Forbidden: You are not Super Admin"))
+	}
+
+	errValidation := service.Validate.Struct(request)
+	helper.PanicIfError(errValidation)
+
+	office := domain.Office{
+		Name:    request.Name,
+		Code:    request.Code,
+		Address: request.Address,
+	}
+
+	office = service.OfficeRepository.Save(ctx, service.DB, office)
+
+	return web.AddOfficeResponse{
+		ID:      office.ID,
+		Name:    office.Name,
+		Code:    office.Code,
+		Address: office.Address,
+	}
 }
