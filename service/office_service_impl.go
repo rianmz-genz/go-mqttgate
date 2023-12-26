@@ -5,8 +5,11 @@ import (
 	"adriandidimqttgate/model/web"
 	"adriandidimqttgate/repository"
 	"context"
+	"encoding/json"
 	"errors"
+	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"gorm.io/gorm"
 )
 
@@ -15,14 +18,22 @@ type OfficeServiceImpl struct {
 	SessionRepository       repository.SessionRepository
 	EnterActivityRepository repository.EnterActivityRepository
 	DB                      *gorm.DB
+	MQTT                    mqtt.Client
 }
 
-func NewOfficeService(userrepository repository.UserRepository, sessionRepository repository.SessionRepository, enterActivityRepository repository.EnterActivityRepository, DB *gorm.DB) OfficeService {
+func NewOfficeService(
+	userrepository repository.UserRepository,
+	sessionRepository repository.SessionRepository,
+	enterActivityRepository repository.EnterActivityRepository,
+	DB *gorm.DB, mqtt mqtt.Client,
+) OfficeService {
+
 	return &OfficeServiceImpl{
 		UserRepository:          userrepository,
 		SessionRepository:       sessionRepository,
 		EnterActivityRepository: enterActivityRepository,
 		DB:                      DB,
+		MQTT:                    mqtt,
 	}
 }
 
@@ -58,4 +69,31 @@ func (service OfficeServiceImpl) GetEntryActivities(ctx context.Context, session
 	}
 
 	return enterActivitiesResponse, nil
+}
+
+func (service OfficeServiceImpl) CloseGate(ctx context.Context, sessionId uint, officeId uint) (web.CloseGateResponse, error) {
+	session, err := service.SessionRepository.GetSessionById(ctx, service.DB, sessionId)
+	helper.PanicIfError(err)
+
+	auth := service.UserRepository.GetUserById(ctx, service.DB, session.UserID)
+
+	if officeId != auth.OfficeID {
+		return web.CloseGateResponse{}, errors.New("unauthorized")
+	}
+
+	closeResponse := web.MqttGateResponse{
+		Type: "Close",
+		Name: auth.Name,
+	}
+	jsonMqttResponse, err := json.Marshal(closeResponse)
+	helper.PanicIfError(err)
+
+	service.MQTT.Publish("office/"+string(auth.Office.Code), 0, false, jsonMqttResponse)
+
+	closeGaateResponse := web.CloseGateResponse{
+		Name:    auth.Name,
+		CloseAt: time.Now(),
+	}
+
+	return closeGaateResponse, nil
 }
