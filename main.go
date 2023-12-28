@@ -55,7 +55,7 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
+		c.Header("Access-Control-Allow-Methods", "POST, HEAD, PATCH, OPTIONS, GET, PUT, DELETE")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -158,9 +158,10 @@ func main() {
 	userRoutes := r.Group("/users")
 	userRoutes.Use(authMiddleware.MiddlewareFunc())
 	{
+		userRoutes.DELETE("/:userId", userController.Delete)
 		userRoutes.GET("/profile", userController.Profile)
 		userRoutes.PUT("/:userId", userController.Update)
-		userRoutes.DELETE("/:userId", userController.Delete)
+		userRoutes.GET("/:officeId/by-office-id", userController.GetUsersByOfficeId)
 	}
 
 	auth := r.Group("/auth")

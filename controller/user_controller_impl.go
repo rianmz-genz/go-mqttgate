@@ -22,6 +22,28 @@ func NewUserController(userService service.UserService, sessionService service.S
 	}
 }
 
+func (controller UserControllerImpl) GetUsersByOfficeId(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	sessionId := uint(claims["id"].(float64))
+
+	result, err := strconv.Atoi(c.Param("officeId"))
+	helper.PanicIfError(err)
+	officeId := uint(result)
+
+	users := controller.UserService.GetUsersByOfficeId(c, sessionId, officeId)
+
+	webResponse := web.WebResponse{
+		Status:  "Success",
+		Code:    200,
+		Message: "Success get all User by office id",
+		Data: map[string]interface{}{
+			"users": users,
+		},
+	}
+
+	helper.WriteToResponseBody(c.Writer, webResponse)
+}
+
 func (controller UserControllerImpl) Profile(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
 	sessionId := uint(claims["id"].(float64))

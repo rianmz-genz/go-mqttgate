@@ -7,6 +7,7 @@ import (
 	"adriandidimqttgate/repository"
 	"context"
 	"errors"
+
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
@@ -47,6 +48,33 @@ func (service UserServiceImpl) GetUserById(ctx context.Context, userId uint) web
 		Office: officeResponse,
 		Role:   roleResponse,
 	}
+}
+
+func (service UserServiceImpl) GetUsersByOfficeId(ctx context.Context, sessionId uint, officeId uint) []web.UserResponse {
+	users, err := service.UserRepository.GetUsersByOfficeId(ctx, service.DB, officeId)
+	helper.PanicIfError(err)
+	var responses []web.UserResponse
+	for _ ,user := range users {
+		officeResponse := web.OfficeResponse{
+			ID:      user.OfficeID,
+			Name:    user.Office.Name,
+			Code:    user.Office.Code,
+			Address: user.Office.Address,
+		}
+		roleResponse := web.RoleResponse{
+			ID:   user.RoleID,
+			Name: user.Role.Name,
+		}
+		response := web.UserResponse{
+			ID: user.ID,
+			Name: user.Name,
+			Email: user.Email,
+			Office: officeResponse,
+			Role: roleResponse,
+		}
+		responses = append(responses, response)
+	} 
+	return responses
 }
 
 func (service UserServiceImpl) Update(ctx context.Context, request web.UserUpdateRequest, sessionId uint, userId uint) (web.UserUpdateResponse, error) {
