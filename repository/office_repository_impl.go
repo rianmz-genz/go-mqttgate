@@ -31,3 +31,11 @@ func (repository *OfficeRepositoryImpl) Save(ctx context.Context, db *gorm.DB, o
 
 	return office
 }
+
+
+func (repository *OfficeRepositoryImpl) FindAll(ctx context.Context, db *gorm.DB) []domain.Office {
+    var offices []domain.Office
+    db.WithContext(ctx).Find(&offices)
+
+    return offices
+}

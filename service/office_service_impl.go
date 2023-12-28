@@ -44,6 +44,7 @@ func NewOfficeService(
 		DB:                      DB,
 		MQTT:                    mqtt,
 		Validate:                validate,
+		
 	}
 }
 
@@ -135,4 +136,30 @@ func (service OfficeServiceImpl) Add(ctx context.Context, request web.AddOfficeR
 		Code:    office.Code,
 		Address: office.Address,
 	}
+}
+
+
+func (service OfficeServiceImpl) GetAllOffice(ctx context.Context, sessionId uint) []web.OfficeResponse {
+	session, err := service.SessionRepository.GetSessionById(ctx, service.DB, sessionId)
+	helper.PanicIfError(err)
+
+	auth := service.UserRepository.GetUserById(ctx, service.DB, session.UserID)
+
+	if auth.Role.Name == "Employee" {
+		panic(exception.NewForbiddenError("Forbidden: You are not Super Admin or Admin"))
+	}
+	offices := service.OfficeRepository.FindAll(ctx, service.DB) // Retrieve all offices
+	   // Map offices to web.AddOfficeResponse objects
+    var responses []web.OfficeResponse
+    for _, office := range offices {
+        response := web.OfficeResponse{
+           ID: office.ID,
+		   Name: office.Name,
+		   Code: office.Code,
+		   Address: office.Address,
+        }
+        responses = append(responses, response)
+    }
+
+    return responses
 }

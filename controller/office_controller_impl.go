@@ -85,3 +85,21 @@ func (controller OfficeControllerImpl) AddOffice(c *gin.Context) {
 
 	helper.WriteToResponseBody(c.Writer, webResponse)
 }
+
+func (controller OfficeControllerImpl) GetAllOffice(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	sessionId := uint(claims["id"].(float64))
+	
+	officesResponse := controller.OfficeService.GetAllOffice(c, sessionId)
+
+	webResponse := web.WebResponse{
+		Status:  "Success",
+		Code:    200,
+		Message: "New Office Created",
+		Data: map[string]interface{}{
+			"offices": officesResponse,
+		},
+	}
+
+	helper.WriteToResponseBody(c.Writer, webResponse)
+}

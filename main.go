@@ -177,6 +177,7 @@ func main() {
 		r.GET("/offices/:officeId/entry-activities", OfficeController.GetEnterActivitiesByOfficeId)
 		r.POST("/offices/:officeId/close-gate", OfficeController.CloseGate)
 		r.POST("/offices", OfficeController.AddOffice)
+		r.GET("/offices", OfficeController.GetAllOffice)
 	}
 
 	err := r.Run(":8888")
