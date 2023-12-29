@@ -83,3 +83,14 @@ func (repository UserRepositoryImpl) Delete(ctx context.Context, db *gorm.DB, us
 		helper.PanicIfError(result.Error)
 	}
 }
+
+
+func (repository UserRepositoryImpl) SaveEmployee(ctx context.Context, db *gorm.DB, user domain.User) domain.User {
+	user.RoleID = 2
+	result := db.WithContext(ctx).Create(&user)
+	if result.Error != nil {
+		helper.PanicIfError(result.Error)
+	}
+
+	return user
+}

@@ -14,5 +14,6 @@ type UserRepository interface {
 	GetUserById(ctx context.Context, db *gorm.DB, userId uint) domain.User
 	Update(ctx context.Context, db *gorm.DB, user domain.User) domain.User
 	Delete(ctx context.Context, db *gorm.DB, userId uint)
-	GetEmployeeByOfficeId(ctx context.Context, db *gorm.DB, officeId uint) ([]domain.User, error) 
+	GetEmployeeByOfficeId(ctx context.Context, db *gorm.DB, officeId uint) ([]domain.User, error)
+	SaveEmployee(ctx context.Context, db *gorm.DB, user domain.User) domain.User
 }

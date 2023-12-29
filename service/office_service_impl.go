@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -44,7 +45,6 @@ func NewOfficeService(
 		DB:                      DB,
 		MQTT:                    mqtt,
 		Validate:                validate,
-		
 	}
 }
 
@@ -130,6 +130,15 @@ func (service OfficeServiceImpl) Add(ctx context.Context, request web.AddOfficeR
 
 	office = service.OfficeRepository.Save(ctx, service.DB, office)
 
+	admin := domain.User{
+		Name:     "admin " + office.Name,
+		Email:    "admin_" + strings.ReplaceAll(strings.ToLower(office.Name), " ", "_"+"@gmail.com"),
+		Password: "password",
+		OfficeID: office.ID,
+		RoleID:   2,
+	}
+	service.UserRepository.SaveEmployee(ctx, service.DB, admin)
+
 	return web.AddOfficeResponse{
 		ID:      office.ID,
 		Name:    office.Name,
@@ -137,7 +146,6 @@ func (service OfficeServiceImpl) Add(ctx context.Context, request web.AddOfficeR
 		Address: office.Address,
 	}
 }
-
 
 func (service OfficeServiceImpl) GetAllOffice(ctx context.Context, sessionId uint) []web.OfficeResponse {
 	session, err := service.SessionRepository.GetSessionById(ctx, service.DB, sessionId)
@@ -149,17 +157,17 @@ func (service OfficeServiceImpl) GetAllOffice(ctx context.Context, sessionId uin
 		panic(exception.NewForbiddenError("Forbidden: You are not Super Admin or Admin"))
 	}
 	offices := service.OfficeRepository.FindAll(ctx, service.DB) // Retrieve all offices
-	   // Map offices to web.AddOfficeResponse objects
-    var responses []web.OfficeResponse
-    for _, office := range offices {
-        response := web.OfficeResponse{
-           ID: office.ID,
-		   Name: office.Name,
-		   Code: office.Code,
-		   Address: office.Address,
-        }
-        responses = append(responses, response)
-    }
+	// Map offices to web.AddOfficeResponse objects
+	var responses []web.OfficeResponse
+	for _, office := range offices {
+		response := web.OfficeResponse{
+			ID:      office.ID,
+			Name:    office.Name,
+			Code:    office.Code,
+			Address: office.Address,
+		}
+		responses = append(responses, response)
+	}
 
-    return responses
+	return responses
 }
