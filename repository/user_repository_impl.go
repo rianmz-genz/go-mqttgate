@@ -4,6 +4,7 @@ import (
 	"adriandidimqttgate/helper"
 	"adriandidimqttgate/model/domain"
 	"context"
+
 	"gorm.io/gorm"
 )
 
@@ -16,7 +17,18 @@ func NewUserRepository() UserRepository {
 
 func (repository UserRepositoryImpl) GetUsersByOfficeId(ctx context.Context, db *gorm.DB, officeId uint) ([]domain.User, error) {
 	var users []domain.User
-	result := db.WithContext(ctx).Where("office_id = ?", officeId).Find(&users)
+	result := db.WithContext(ctx).Where("office_id = ?", officeId).Preload("Office").Preload("Role").Find(&users)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return users, nil
+}
+
+func (repository UserRepositoryImpl) GetEmployeeByOfficeId(ctx context.Context, db *gorm.DB, officeId uint) ([]domain.User, error) {
+	var users []domain.User
+	result := db.WithContext(ctx).Where("office_id = ? and role_id = 1", officeId).Preload("Office").Preload("Role").Find(&users)
 
 	if result.Error != nil {
 		return nil, result.Error

@@ -51,7 +51,7 @@ func (service UserServiceImpl) GetUserById(ctx context.Context, userId uint) web
 }
 
 func (service UserServiceImpl) GetUsersByOfficeId(ctx context.Context, sessionId uint, officeId uint) []web.UserResponse {
-	users, err := service.UserRepository.GetUsersByOfficeId(ctx, service.DB, officeId)
+	users, err := service.UserRepository.GetEmployeeByOfficeId(ctx, service.DB, officeId)
 	helper.PanicIfError(err)
 	var responses []web.UserResponse
 	for _ ,user := range users {
