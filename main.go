@@ -181,6 +181,8 @@ func main() {
 		r.GET("/offices", OfficeController.GetAllOffice)
 	}
 
+	r.GET("/", func(ctx *gin.Context) {ctx.JSON(200, "ping!")})
+
 	err := r.Run(":8888")
 	helper.PanicIfError(err)
 }

@@ -2,6 +2,8 @@ package app
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -19,12 +21,12 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func NewMqttClient() mqtt.Client {
-	// broker := "0.0.0.0"
+	// broker := "188.166.178.136"
 	broker := "broker.emqx.io"
 	port := 1883
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
-	opts.SetClientID("go_mqtt_pub")
+	opts.SetClientID("go_mqtt_pub_" + strconv.Itoa(int(time.Millisecond)))
 	opts.SetUsername("emqx")
 	opts.SetPassword("public")
 	opts.SetDefaultPublishHandler(messagePubHandler)
